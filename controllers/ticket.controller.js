@@ -3,6 +3,7 @@ const user = require('../Models/user.model')
 const objConverter = require('../objectConverter/ticketCanverter');
 const isValied = require('../constant/constant');
 const { update } = require('../Models/ticket.model');
+const sendEmail = require('../utils/notificationClient');
 exports.createTicket = async (req, res) => {
     //validate title
     if (!req.body.title) {
@@ -49,8 +50,9 @@ exports.createTicket = async (req, res) => {
     try {
         const ticketDetails = await TicketModel.create(ticketObject)
         console.log(req.userId)
+        let customer;
         if (ticketDetails) {
-            const customer = await user.findOne({
+             customer = await user.findOne({
                 userId: req.userId
             });
 
@@ -72,6 +74,14 @@ exports.createTicket = async (req, res) => {
                 await engineer.save()
             }
            }
+           /*
+               Sending Notification to the assigned enginner 
+           */
+          sendEmail(ticketDetails._id,
+            'Ticket With id : '+ticketDetails._id+" created .",
+            ticketDetails.description,
+            customer.email+' '+' , '+' '+engineer.email,
+            'CRM APP');
             return res.status(201).send({
                 message: "Ticket creating Successfully!",
                 success: true,
@@ -79,7 +89,7 @@ exports.createTicket = async (req, res) => {
             });
         }
     } catch (err) {
-        console.log(err.message)
+        console.log(err)
         return res.status(500).send({
             message: " error in Ticket creating",
             success: false
@@ -202,12 +212,12 @@ exports.getOneTicketbyId = async (req, res) => {
             })
         }
     }
-    if (data.userType !== isValied.userType.engineer) {
-        return res.status(500).send({
-            message: "Invalied user!",
-            success: false
-        })
-    }
+    // if (data.userType !== isValied.userType.engineer) {
+    //     return res.status(500).send({
+    //         message: "Invalied user!",
+    //         success: false
+    //     })
+    // }
     if (req.params.id) {
         try {
             const ticketData = await TicketModel.findOne({
