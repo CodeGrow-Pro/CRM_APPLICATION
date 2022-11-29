@@ -9,7 +9,13 @@ exports.connect = async ()=>{
     }
 
 }
-
+exports.closeDatabase = async ()=>{
+    await mongoose.connection.dropDatabase();
+    await mongoose.connection.close();
+    if(mongod){
+        await mongod.stop()
+    }
+}
 exports.clearDatabase = async ()=>{
     const collections = mongoose.connection.collections;
     for(const key in collections){
