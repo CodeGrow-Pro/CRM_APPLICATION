@@ -9,3 +9,18 @@ exports.OneUserConverter = (userObj)=>{
     };
 return user;
 }
+exports.multiConverter = (user)=>{
+    const send = [];
+    user.forEach(u => {
+        send.push({
+            name: u.name,
+                userId:u.userId,
+                email: u.email,
+                userType: u.userType,
+                userStatus: u.userStatus,
+                ticketsCreated:u.ticketsCreated,
+                ticketsAssigned:u.ticketsAssigned
+        })
+    });
+    return send;
+}

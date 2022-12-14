@@ -34,13 +34,13 @@ exports.signup = async (req, res) => {
         }
         return res.status(201).send({
             message:"signup sucessfully!",
-            success:true,
-            userSummry : responseObj
+            success:true
         });
     } catch (err) {
         console.log(err.message);
         res.status(500).send({
-            message: 'Failure in signup!',
+            message: 'Internal server error!',
+            success:false
         })
     }
 }
@@ -54,19 +54,16 @@ exports.signin = async (req, res) => {
         const user = await userModel.findOne({
             userId: userId
         });
-        if (user == null) {
-            res.status(400).send({
-                message: "User not found!"
-            });
-        }
-        var passwordIsValid = bcrypt.compareSync(body.password, user.password);
+        var passwordIsValid = bcrypt.compareSync(password, user.password);
+
         if (!passwordIsValid) {
-             res.status(401).send({
-                message: "Invalied password"
+             return res.status(401).send({
+                message: "Invalied password",
+                success:false
             })
         }
         if (user.userStatus !== 'APPROVED') {
-            return res.status(200).send({
+            return res.status(401).send({
                 message: "Your are not Approved Wait some time ",
                 Status:user.userStatus
             });
@@ -85,22 +82,16 @@ exports.signin = async (req, res) => {
     } catch (err) {
         console.log(err.message)
        return res.status(400).send({
-            message: "User not found!"
+            message: "User not found!",
+            success:false
         });
     }
 }
 
 exports.findAlluser =async (req,res)=>{
     try{
-               const user = await userModel.find().exec()
-               if(user){
-                 res.status(200).send({
-                    message:"fetch user data successfully!",
-                    success:true,
-                       usersDetails : user
-                });
-                return;
-               }
+               const userS = await userModel.find().exec()
+                 return res.status(200).send(userConverter.multiConverter(userS));
     }catch(err){
         console.log(err.message);
          res.status(500).send({
@@ -122,7 +113,7 @@ exports.updateUser = async(req,res)=>{
                  user.userType = isValiedConstant.userType[req.body.userType];
           } 
           if(!req.body.email && !req.body.userType){
-               return res.status(401).send({
+               return res.status(404).send({
                    message:"Please provide the Data for update!",
                    success:false
                });
@@ -133,6 +124,7 @@ exports.updateUser = async(req,res)=>{
                 success:true,
                 updatedDetails :  userConverter.OneUserConverter(user)
              })
+
     }catch(err){
         console.log(err.message);
         return res.status(500).send({

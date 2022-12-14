@@ -84,8 +84,8 @@ exports.createTicket = async (req, res) => {
             'CRM APP');
             return res.status(201).send({
                 message: "Ticket creating Successfully!",
-                success: true,
-                TicketSummry: ticketDetails
+                success: true ,
+                Status:ticketDetails.status
             });
         }
     } catch (err) {
@@ -133,19 +133,19 @@ exports.findAllTickets = async (req, res) => {
         const ticketDetails = await TicketModel.find(find);
         if (ticketDetails) {
             res.status(201).send({
-                message: "fatch all tickets successfully!",
-                success: true,
-                TicketSummry: ticketDetails
+                message:"Fetch ticket Successfully!",
+                success:true,
+                ticketSummry:ticketDetails
             });
             return;
         }
     } catch (err) {
         console.log(err.message)
-        res.status(500).send({
+        return res.status(500).send({
             message: "something want wrong!",
             success: false
         });
-        return;
+        
     }
 }
 
@@ -167,12 +167,11 @@ exports.deleteTicket = async (req, res) => {
         });
         return;
     }
-    if (data.userType == isValied.userStatus.engineer) {
+    if (isValied.userType[data.userType] == isValied.userStatus.engineer) {
        return  res.status(500).send({
             message: "Engineer could not Delete any Ticket!",
             success: false
         });
-        
     }
     if (data.userType == 'CUSTOMER') {
         find.reporter = data.userId
@@ -254,7 +253,6 @@ exports.updateTicket = async (req, res) => {
     if(ticketId){
                     try{
                          ticket = await TicketModel.findOne({_id:ticketId});
-                        
                     }catch(err){
                         return res.status(400).send({
                             message:"Invalied ticket ID",
